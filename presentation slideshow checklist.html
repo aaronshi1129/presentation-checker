@@ -1,0 +1,751 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .checklist-item {
+            transition: all 0.3s ease;
+        }
+        
+        .checklist-item.completed {
+            background-color: #f0fff4;
+            border-left: 4px solid #48bb78;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            animation: fall 3s ease-in-out infinite;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .badge {
+            transition: all 0.5s ease;
+            transform: scale(0);
+            opacity: 0;
+        }
+        
+        .badge.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .badge-notification {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .master-badge {
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+        }
+        
+        .footer-link:hover {
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col min-h-screen">
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50"></div>
+    
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden main-content">
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
+            <h1 class="text-2xl md:text-3xl font-bold">Presentation Checker</h1>
+            <p class="mt-2 opacity-90">Ensure your presentation is polished and professional</p>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center flex-grow mr-4">
+                    <div class="w-full bg-gray-200 rounded-full h-4 mr-4">
+                        <div id="progress-bar" class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-4 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <span id="progress-text" class="text-sm font-medium">0%</span>
+                </div>
+                <button id="reset-btn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 text-sm transition-colors">Reset All</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2">
+                    <div class="space-y-6">
+                        <div class="border-b pb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Content Structure 內容架構
+                                </h2>
+                                <div id="badge-content" class="badge bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full hidden">
+                                    Content Structure Expert
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="content">
+                                    <span>Clear introduction with presentation objectives<br>清楚介紹簡報的目標</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="content">
+                                    <span>Logical flow between slides and sections<br>簡報各部分內容銜接合理順暢</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="content">
+                                    <span>Strong conclusion with key takeaways<br>提供觀眾可記得的重點與強而有力的結尾</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="content">
+                                    <span>Appropriate content for target audience<br>適合目標觀眾的內容</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-b pb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Visual Design 視覺設計
+                                </h2>
+                                <div id="badge-design" class="badge bg-purple-100 text-purple-800 text-xs font-semibold px-3 py-1 rounded-full hidden">
+                                    Visual Design Expert
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="design">
+                                    <span>Consistent color scheme throughout slides<br>所有簡報頁面的一致配色</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="design">
+                                    <span>Readable font size and style (min. 24pt for body text)<br>可讀的字體大小與風格（內文至少24點）</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="design">
+                                    <span>High-quality, relevant images and graphics<br>高品質、與內容相關的圖片與圖表</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="design">
+                                    <span>Not overcrowded - one main idea per slide<br>一頁一個重點，避免內容過度擁擠</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-b pb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Language & Text 語言與文字
+                                </h2>
+                                <div id="badge-language" class="badge bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full hidden">
+                                    Language Master
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="language">
+                                    <span>No spelling or grammar errors<br>沒有拼字或文法錯誤</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="language">
+                                    <span>Concise bullet points (not full sentences)<br>簡潔的列點呈現（使用片語、非完整句）</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="language">
+                                    <span>Consistent terminology throughout<br>一致的術語使用</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="language">
+                                    <span>Clear headings and subheadings<br>清楚的標題與副標題</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-b pb-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                    </svg>
+                                    Delivery Preparation 演講準備
+                                </h2>
+                                <div id="badge-delivery" class="badge bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full hidden">
+                                    Delivery Expert
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="delivery">
+                                    <span>Speaker notes prepared for each slide<br>每頁簡報準備好演講備忘錄</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="delivery">
+                                    <span>Practiced presentation timing (within allocated time)<br>練習簡報的時間掌控</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="delivery">
+                                    <span>Prepared for potential questions<br>準備好迎接問題</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="delivery">
+                                    <span>Tested presentation on the actual equipment<br>在現場的設備上測試簡報</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Final Checks 最終確認
+                                </h2>
+                                <div id="badge-final" class="badge bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full hidden">
+                                    Quality Assurance Pro
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="final">
+                                    <span>All links and embedded media work correctly<br>內嵌的媒體（圖片、影片等）可正常運作</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="final">
+                                    <span>Slide transitions and animations are appropriate<br>恰當的簡報轉場與動畫</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="final">
+                                    <span>Backup copy of presentation available<br>有準備好備份的簡報檔</span>
+                                </div>
+                                <div class="checklist-item p-3 rounded-lg border hover:shadow-md cursor-pointer flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-3" data-category="final">
+                                    <span>Presentation reviewed by a colleague/classmate<br>給同儕先幫忙看過</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-blue-800">Presentation Tip</h3>
+                                <div id="tip-content" class="mt-2 text-sm text-blue-700">
+                                    Remember the 6x6 rule: No more than 6 bullet points per slide and no more than 6 words per bullet point.<br>
+                                    請注意6x6原則：一頁最多不可超過6個列點，每個列點不可超過6個字。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="completion-message" class="hidden mt-8 p-4 bg-green-50 rounded-lg border border-green-100 text-center">
+                        <h3 class="text-lg font-medium text-green-800">Congratulations! 🎉</h3>
+                        <p class="mt-2 text-green-700">Your presentation is ready to impress!</p>
+                    </div>
+                </div>
+                
+                <div class="md:col-span-1">
+                    <div class="bg-gray-50 rounded-lg p-4 border sticky top-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            Your Achievements
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div id="master-badge-container" class="hidden">
+                                <div class="bg-gradient-to-r from-yellow-300 to-yellow-500 p-4 rounded-lg text-center shadow-lg master-badge">
+                                    <div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-white font-bold text-lg">Presentation Slideshow Master</h4>
+                                    <p class="text-yellow-100 text-sm mt-1">All skills mastered!</p>
+                                </div>
+                            </div>
+                            
+                            <div id="badges-container" class="space-y-3">
+                                <div id="content-badge-display" class="hidden bg-white p-3 rounded-lg border shadow-sm flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">Content Structure Expert</h5>
+                                        <p class="text-xs text-gray-500">Mastered content organization</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="design-badge-display" class="hidden bg-white p-3 rounded-lg border shadow-sm flex items-center">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">Visual Design Expert</h5>
+                                        <p class="text-xs text-gray-500">Mastered visual presentation</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="language-badge-display" class="hidden bg-white p-3 rounded-lg border shadow-sm flex items-center">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">Language Master</h5>
+                                        <p class="text-xs text-gray-500">Mastered text and language</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="delivery-badge-display" class="hidden bg-white p-3 rounded-lg border shadow-sm flex items-center">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">Delivery Expert</h5>
+                                        <p class="text-xs text-gray-500">Mastered presentation delivery</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="final-badge-display" class="hidden bg-white p-3 rounded-lg border shadow-sm flex items-center">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">Quality Assurance Pro</h5>
+                                        <p class="text-xs text-gray-500">Mastered final quality checks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="no-badges-message" class="text-center p-4 text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p>Complete a section to earn badges!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-8 bg-gradient-to-r from-blue-600 to-purple-700 text-white py-4 px-6 rounded-lg shadow-lg max-w-4xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-center items-center text-center md:text-left">
+            <p class="mr-2 mb-2 md:mb-0">
+                <a href="https://www.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start footer-link hover:text-white transition duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Go to AaronShi.cc
+                </a>
+            </p>
+            <span class="hidden md:block mx-2 text-blue-300">|</span>
+            <a href="https://app.aaronshi.cc" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start footer-link hover:text-white transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to AaronShi.cc App
+            </a>
+        </div>
+    </footer>
+    
+    <div id="badge-notification" class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 hidden transform transition-all duration-500 translate-y-20 opacity-0 max-w-xs">
+        <div class="flex items-center">
+            <div id="notification-icon" class="w-12 h-12 rounded-full flex items-center justify-center mr-3 badge-notification">
+                <!-- Icon will be inserted by JS -->
+            </div>
+            <div>
+                <h4 id="notification-title" class="font-bold text-gray-800"><!-- Title will be inserted by JS --></h4>
+                <p id="notification-text" class="text-sm text-gray-600"><!-- Text will be inserted by JS --></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const resetBtn = document.getElementById('reset-btn');
+            const completionMessage = document.getElementById('completion-message');
+            const confettiContainer = document.getElementById('confetti-container');
+            const tipContent = document.getElementById('tip-content');
+            const noBadgesMessage = document.getElementById('no-badges-message');
+            const masterBadgeContainer = document.getElementById('master-badge-container');
+            const badgeNotification = document.getElementById('badge-notification');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationText = document.getElementById('notification-text');
+            
+            // Badge elements
+            const badgeContent = document.getElementById('badge-content');
+            const badgeDesign = document.getElementById('badge-design');
+            const badgeLanguage = document.getElementById('badge-language');
+            const badgeDelivery = document.getElementById('badge-delivery');
+            const badgeFinal = document.getElementById('badge-final');
+            
+            // Badge display elements
+            const contentBadgeDisplay = document.getElementById('content-badge-display');
+            const designBadgeDisplay = document.getElementById('design-badge-display');
+            const languageBadgeDisplay = document.getElementById('language-badge-display');
+            const deliveryBadgeDisplay = document.getElementById('delivery-badge-display');
+            const finalBadgeDisplay = document.getElementById('final-badge-display');
+            
+            const tips = [
+                "Remember the 6x6 rule: No more than 6 bullet points per slide and no more than 6 words per bullet point.",
+                "Use the 10-20-30 rule: 10 slides, 20 minutes, 30-point font minimum.",
+                "Start with a compelling hook to grab your audience's attention in the first 30 seconds.",
+                "Use high-contrast colors for better readability, especially in large rooms.",
+                "Include a clear call-to-action at the end of your presentation.",
+                "When presenting data, use charts and graphs instead of tables whenever possible.",
+                "Follow the 'tell them' rule: Tell them what you'll tell them, tell them, then tell them what you told them.",
+                "Use the rule of thirds for slide layout to create visual interest.",
+                "Avoid reading directly from your slides - they should complement your speech, not replace it.",
+                "End with a strong, memorable closing statement rather than a weak 'thank you' or 'any questions?'"
+            ];
+            
+            // Badge configuration
+            const badges = {
+                content: {
+                    name: "Content Structure Expert",
+                    description: "Mastered content organization",
+                    color: "blue",
+                    badge: badgeContent,
+                    display: contentBadgeDisplay,
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>'
+                },
+                design: {
+                    name: "Visual Design Expert",
+                    description: "Mastered visual presentation",
+                    color: "purple",
+                    badge: badgeDesign,
+                    display: designBadgeDisplay,
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>'
+                },
+                language: {
+                    name: "Language Master",
+                    description: "Mastered text and language",
+                    color: "yellow",
+                    badge: badgeLanguage,
+                    display: languageBadgeDisplay,
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>'
+                },
+                delivery: {
+                    name: "Delivery Expert",
+                    description: "Mastered presentation delivery",
+                    color: "green",
+                    badge: badgeDelivery,
+                    display: deliveryBadgeDisplay,
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>'
+                },
+                final: {
+                    name: "Quality Assurance Pro",
+                    description: "Mastered final quality checks",
+                    color: "red",
+                    badge: badgeFinal,
+                    display: finalBadgeDisplay,
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                }
+            };
+            
+            // Track earned badges
+            const earnedBadges = {
+                content: false,
+                design: false,
+                language: false,
+                delivery: false,
+                final: false
+            };
+            
+            function updateProgress() {
+                const total = checkboxes.length;
+                const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+                const percentage = Math.round((checked / total) * 100);
+                
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = percentage + '%';
+                
+                if (percentage === 100) {
+                    showCompletionMessage();
+                    awardMasterBadge();
+                } else {
+                    completionMessage.classList.add('hidden');
+                }
+                
+                // Show a new tip every 3 items checked
+                if (checked % 3 === 0 && checked > 0) {
+                    tipContent.textContent = tips[checked % tips.length];
+                }
+                
+                // Check if any category is complete
+                checkCategoryCompletion();
+                
+                // Update badges display
+                updateBadgesDisplay();
+            }
+            
+            function checkCategoryCompletion() {
+                const categories = ['content', 'design', 'language', 'delivery', 'final'];
+                
+                categories.forEach(category => {
+                    const categoryCheckboxes = document.querySelectorAll(`input[data-category="${category}"]`);
+                    const checkedInCategory = Array.from(categoryCheckboxes).filter(cb => cb.checked).length;
+                    
+                    if (checkedInCategory === categoryCheckboxes.length && !earnedBadges[category]) {
+                        // Award badge for this category
+                        awardBadge(category);
+                    } else if (checkedInCategory < categoryCheckboxes.length && earnedBadges[category]) {
+                        // Remove badge if category is no longer complete
+                        removeBadge(category);
+                    }
+                });
+            }
+            
+            function awardBadge(category) {
+                const badge = badges[category];
+                
+                // Show the badge in the section header
+                badge.badge.classList.remove('hidden');
+                badge.badge.classList.add('show');
+                
+                // Show the badge in the achievements panel
+                badge.display.classList.remove('hidden');
+                
+                // Mark as earned
+                earnedBadges[category] = true;
+                
+                // Show notification
+                showNotification(badge);
+                
+                // Hide the "no badges" message if any badge is earned
+                noBadgesMessage.classList.add('hidden');
+                
+                // Check if all badges are earned
+                checkAllBadgesEarned();
+            }
+            
+            function removeBadge(category) {
+                const badge = badges[category];
+                
+                // Hide the badge in the section header
+                badge.badge.classList.add('hidden');
+                badge.badge.classList.remove('show');
+                
+                // Hide the badge in the achievements panel
+                badge.display.classList.add('hidden');
+                
+                // Mark as not earned
+                earnedBadges[category] = false;
+                
+                // Show the "no badges" message if no badges are earned
+                const anyBadgeEarned = Object.values(earnedBadges).some(earned => earned);
+                if (!anyBadgeEarned) {
+                    noBadgesMessage.classList.remove('hidden');
+                }
+                
+                // Hide master badge if any category is incomplete
+                masterBadgeContainer.classList.add('hidden');
+            }
+            
+            function checkAllBadgesEarned() {
+                const allEarned = Object.values(earnedBadges).every(earned => earned);
+                if (allEarned) {
+                    awardMasterBadge();
+                }
+            }
+            
+            function awardMasterBadge() {
+                masterBadgeContainer.classList.remove('hidden');
+                
+                // Show notification for master badge
+                showNotification({
+                    name: "Presentation Slideshow Master",
+                    description: "All skills mastered!",
+                    color: "yellow",
+                    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>'
+                }, true);
+            }
+            
+            function showNotification(badge, isMaster = false) {
+                // Set notification content
+                notificationIcon.className = `w-12 h-12 bg-${badge.color}-100 rounded-full flex items-center justify-center mr-3 badge-notification`;
+                notificationIcon.innerHTML = badge.icon;
+                notificationTitle.textContent = badge.name;
+                notificationText.textContent = badge.description;
+                
+                if (isMaster) {
+                    badgeNotification.className = "fixed bottom-4 right-4 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-lg shadow-lg p-4 hidden transform transition-all duration-500 translate-y-20 opacity-0 max-w-xs";
+                    notificationTitle.className = "font-bold text-white";
+                    notificationText.className = "text-sm text-yellow-100";
+                } else {
+                    badgeNotification.className = "fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 hidden transform transition-all duration-500 translate-y-20 opacity-0 max-w-xs";
+                    notificationTitle.className = "font-bold text-gray-800";
+                    notificationText.className = "text-sm text-gray-600";
+                }
+                
+                // Show notification
+                badgeNotification.classList.remove('hidden');
+                setTimeout(() => {
+                    badgeNotification.classList.remove('translate-y-20', 'opacity-0');
+                }, 100);
+                
+                // Hide notification after 5 seconds
+                setTimeout(() => {
+                    badgeNotification.classList.add('translate-y-20', 'opacity-0');
+                    setTimeout(() => {
+                        badgeNotification.classList.add('hidden');
+                    }, 500);
+                }, 5000);
+            }
+            
+            function updateBadgesDisplay() {
+                const anyBadgeEarned = Object.values(earnedBadges).some(earned => earned);
+                if (anyBadgeEarned) {
+                    noBadgesMessage.classList.add('hidden');
+                } else {
+                    noBadgesMessage.classList.remove('hidden');
+                }
+            }
+            
+            function showCompletionMessage() {
+                completionMessage.classList.remove('hidden');
+                createConfetti();
+            }
+            
+            function createConfetti() {
+                confettiContainer.innerHTML = '';
+                const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                    confetti.style.animationDelay = Math.random() * 5 + 's';
+                    
+                    confettiContainer.appendChild(confetti);
+                }
+                
+                setTimeout(() => {
+                    confettiContainer.innerHTML = '';
+                }, 8000);
+            }
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const item = this.closest('.checklist-item');
+                    if (this.checked) {
+                        item.classList.add('completed');
+                    } else {
+                        item.classList.remove('completed');
+                    }
+                    updateProgress();
+                });
+                
+                // Make the entire item clickable
+                const item = checkbox.closest('.checklist-item');
+                item.addEventListener('click', function(e) {
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        if (checkbox.checked) {
+                            item.classList.add('completed');
+                        } else {
+                            item.classList.remove('completed');
+                        }
+                        updateProgress();
+                    }
+                });
+            });
+            
+            resetBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.closest('.checklist-item').classList.remove('completed');
+                });
+                
+                // Reset all badges
+                Object.keys(earnedBadges).forEach(category => {
+                    earnedBadges[category] = false;
+                    badges[category].badge.classList.add('hidden');
+                    badges[category].display.classList.add('hidden');
+                });
+                
+                // Show the "no badges" message
+                noBadgesMessage.classList.remove('hidden');
+                
+                // Hide master badge
+                masterBadgeContainer.classList.add('hidden');
+                
+                updateProgress();
+                confettiContainer.innerHTML = '';
+            });
+            
+            // Initialize progress
+            updateProgress();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9469d0e650af808c',t:'MTc0ODM5NDAzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
